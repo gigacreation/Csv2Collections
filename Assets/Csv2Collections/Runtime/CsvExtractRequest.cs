@@ -5,22 +5,22 @@ namespace GigaCreation.Tools.Csv2Collections
     public class CsvExtractRequest
     {
         /// <summary>
-        /// CSV のファイルパス。
+        /// The path of the CSV file.
         /// </summary>
         public string Path { get; }
 
         /// <summary>
-        /// true なら、CSV の 1 行目をヘッダーとして扱います。
+        /// If true, the first line of the CSV file is treated as a header.
         /// </summary>
         public bool HasHeader { get; }
 
         /// <summary>
-        /// 値として抽出する列のインデックス。
+        /// The indexes of the columns to extract as a value.
         /// </summary>
         public int[] ValueColumnIndexes { get; }
 
         /// <summary>
-        /// キーとして抽出する列のインデックス。
+        /// The indexes of the columns to extract as a key.
         /// </summary>
         public int[] KeyColumnIndexes { get; private set; }
 

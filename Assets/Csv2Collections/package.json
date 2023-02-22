@@ -2,7 +2,7 @@
     "name": "jp.gigacreation.tools.csv2collections",
     "version": "1.0.0",
     "displayName": "Csv2Collections",
-    "description": "This package allows you to convert a csv to a list or a dictionary.",
+    "description": "This package allows you to generate lists or dictionaries extracted from a CSV file.",
     "unity": "2021.3",
     "author": {
         "name": "GIGA CREATION",
@@ -12,7 +12,7 @@
     "samples": [
         {
             "displayName": "Sample",
-            "description": "Convert a csv to lists and dictionaries.",
+            "description": "Generate a list and a dictionary extracted from a CSV file.",
             "path": "Sample~"
         }
     ]

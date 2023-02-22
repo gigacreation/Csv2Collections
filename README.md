@@ -1,6 +1,6 @@
 # Csv2Collections for Unity
 
-This package allows you to convert a csv to a list or a dictionary.
+This package allows you to generate lists or dictionaries extracted from a CSV file.
 
 ## 日本語による説明 / Explanation in Japanese
 

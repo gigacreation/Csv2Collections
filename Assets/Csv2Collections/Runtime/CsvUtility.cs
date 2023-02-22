@@ -12,21 +12,21 @@ namespace GigaCreation.Tools.Csv2Collections
     public static class CsvUtility
     {
         /// <summary>
-        /// CSV の指定された列を要素に持ったリストを作成して返します。
+        /// Returns a list with elements extracted from a CSV file.
         /// </summary>
-        /// <param name="request">抽出リクエストのデータ。</param>
-        /// <returns>抽出したリスト。</returns>
+        /// <param name="request">The request data.</param>
+        /// <returns>The generated list.</returns>
         public static List<string> ExtractIntoList(CsvExtractRequest request)
         {
             if (!(request.ValueColumnIndexes?.Length > 0))
             {
-                Debug.LogError("抽出する列のインデックスが指定されていません。");
+                Debug.LogError("The index of the column to be extracted is not specified.");
                 return null;
             }
 
             if (!TryLoadCsv(request.Path, out TextAsset csv))
             {
-                Debug.LogError($"指定された CSV が存在していません：{request.Path}");
+                Debug.LogError($"The specified CSV file does not exist: {request.Path}");
                 return null;
             }
 
@@ -41,21 +41,21 @@ namespace GigaCreation.Tools.Csv2Collections
         }
 
         /// <summary>
-        /// CSV の指定された列をキー・値とした辞書を作成して返します。
+        /// Returns a dictionary with keys and values extracted from a CSV file.
         /// </summary>
-        /// <param name="request">抽出リクエストのデータ。</param>
-        /// <returns>抽出した辞書。</returns>
+        /// <param name="request">The request data.</param>
+        /// <returns>The generated dictionary.</returns>
         public static Dictionary<string, string> ExtractIntoDictionary(CsvExtractRequest request)
         {
             if (!(request.KeyColumnIndexes?.Length > 0) || !(request.ValueColumnIndexes?.Length > 0))
             {
-                Debug.LogError("抽出する列のインデックスが指定されていません。");
+                Debug.LogError("The index of the column to be extracted is not specified.");
                 return null;
             }
 
             if (!TryLoadCsv(request.Path, out TextAsset csv))
             {
-                Debug.LogError($"指定された CSV が存在していません：{request.Path}");
+                Debug.LogError($"The specified CSV file does not exist: {request.Path}");
                 return null;
             }
 
@@ -90,7 +90,7 @@ namespace GigaCreation.Tools.Csv2Collections
 
             if (hasHeader)
             {
-                // ヘッダーをスキップする
+                // Skip the header.
                 reader.ReadLine();
             }
 
