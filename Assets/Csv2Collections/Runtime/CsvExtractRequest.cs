@@ -10,7 +10,7 @@ namespace GigaCreation.Tools.Csv2Collections
         public string Csv { get; }
 
         /// <summary>
-        /// If true, the first line of the CSV file is treated as a header.
+        /// If true, the first line of the CSV is treated as a header.
         /// </summary>
         public bool HasHeader { get; }
 

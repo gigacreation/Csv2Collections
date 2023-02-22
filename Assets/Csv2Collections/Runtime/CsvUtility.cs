@@ -9,7 +9,7 @@ namespace GigaCreation.Tools.Csv2Collections
     public static class CsvUtility
     {
         /// <summary>
-        /// Returns a list with elements extracted from a CSV file.
+        /// Returns a list with elements extracted from a CSV text.
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated list.</returns>
@@ -32,7 +32,7 @@ namespace GigaCreation.Tools.Csv2Collections
         }
 
         /// <summary>
-        /// Returns a dictionary with keys and values extracted from a CSV file.
+        /// Returns a dictionary with keys and values extracted from a CSV text.
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated dictionary.</returns>
