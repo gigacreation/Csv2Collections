@@ -5,14 +5,19 @@ namespace GigaCreation.Tools.Csv2Collections
     public class CsvExtractRequest
     {
         /// <summary>
-        /// The path of the CSV file.
+        /// The CSV text.
         /// </summary>
-        public string Path { get; }
+        public string Csv { get; }
 
         /// <summary>
         /// If true, the first line of the CSV file is treated as a header.
         /// </summary>
         public bool HasHeader { get; }
+
+        /// <summary>
+        /// The separator if multiple columns are specified.
+        /// </summary>
+        public string Separator { get; }
 
         /// <summary>
         /// The indexes of the columns to extract as a value.
@@ -24,10 +29,11 @@ namespace GigaCreation.Tools.Csv2Collections
         /// </summary>
         public int[] KeyColumnIndexes { get; private set; }
 
-        public CsvExtractRequest(string path, bool hasHeader = false, params int[] valueIndexes)
+        public CsvExtractRequest(string csv, bool hasHeader = false, string separator = null, params int[] valueIndexes)
         {
-            Path = path;
+            Csv = csv;
             HasHeader = hasHeader;
+            Separator = separator;
             ValueColumnIndexes = valueIndexes;
         }
 
