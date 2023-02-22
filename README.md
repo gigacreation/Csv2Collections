@@ -4,7 +4,7 @@ This package allows you to generate lists or dictionaries extracted from a CSV f
 
 ## 日本語による説明 / Explanation in Japanese
 
-[CSV の特定の列を抽出してリストや辞書を生成できるツールを公開しました](https://blog.gigacreation.jp/entry/2023/02/22/175154)
+[CSV の特定の列を抽出して、リストや辞書を生成できるツールを公開しました](https://blog.gigacreation.jp/entry/2023/02/22/175154)
 
 ## Usage
 
@@ -20,7 +20,7 @@ NINTENDO64,NUS-001,1996-06-23
 "
 
 // 2. Create `CsvExtractRequest` .
-var request = new CsvExtractRequest(csv, true, " / ", 1, 2);
+var request = new CsvExtractRequest(csv, true, "", 1);
 
 // 3. Pass the request to `CsvUtility.ExtractIntoList()` and you will get the extracted list!
 List<string> list = CsvUtility.ExtractIntoList(request);
@@ -38,7 +38,7 @@ NINTENDO64,NUS-001,1996-06-23
 "
 
 // 2. Create `CsvExtractRequest` .
-var request = new CsvExtractRequest(csv, true, " / ", 1, 2);
+var request = new CsvExtractRequest(csv, true, "", 1);
 request.SetKeyColumnIndexes(0); // <- The indexes of the columns to extract as a key.
 
 // 3. Pass the request to `CsvUtility.ExtractIntoDictionary()` and you will get the extracted dictionary!
