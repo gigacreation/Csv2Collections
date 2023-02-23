@@ -1,6 +1,8 @@
 # Csv2Collections for Unity
 
-This package allows you to generate lists or dictionaries extracted from a CSV file.
+This package allows you to generate a list or a dictionary extracted from a CSV text.
+
+<img src="https://user-images.githubusercontent.com/5264444/220840215-57dd8df8-b939-40c4-ae90-a9b11c014e9a.png">
 
 ## 日本語による説明 / Explanation in Japanese
 
@@ -56,7 +58,7 @@ Dictionary<string, string> dictionary = CsvUtility.ExtractIntoDictionary(request
 public string Csv { get; }
 
 /// <summary>
-/// If true, the first line of the CSV file is treated as a header.
+/// If true, the first line of the CSV text is treated as a header.
 /// </summary>
 public bool HasHeader { get; }
 
