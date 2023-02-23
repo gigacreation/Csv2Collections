@@ -2,6 +2,8 @@
 
 This package allows you to generate lists or dictionaries extracted from a CSV file.
 
+<img src="https://user-images.githubusercontent.com/5264444/220840215-57dd8df8-b939-40c4-ae90-a9b11c014e9a.png">
+
 ## 日本語による説明 / Explanation in Japanese
 
 [CSV の特定の列を抽出して、リストや辞書を生成できるツールを公開しました](https://blog.gigacreation.jp/entry/2023/02/22/175154)
