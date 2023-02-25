@@ -1,3 +1,5 @@
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,9 +23,9 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
         [SerializeField] private int[] _keyColumnIndexes;
         [SerializeField] private int[] _valueColumnIndexes;
 
-        private readonly StringBuilder _keysBuilder = new();
-        private readonly StringBuilder _valuesBuilder = new();
-        private readonly StringBuilder _equalityOperatorBuilder = new();
+        private readonly StringBuilder _keysBuilder = new StringBuilder();
+        private readonly StringBuilder _valuesBuilder = new StringBuilder();
+        private readonly StringBuilder _equalityOperatorBuilder = new StringBuilder();
 
         private void Start()
         {
@@ -84,10 +86,10 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
 
             ClearStringBuilders();
 
-            foreach ((string key, string value) in response)
+            foreach (KeyValuePair<string, string> pair in response)
             {
-                _keysBuilder.AppendLine($"[\"{key}\"]");
-                _valuesBuilder.AppendLine(value);
+                _keysBuilder.AppendLine($"[\"{pair.Key}\"]");
+                _valuesBuilder.AppendLine(pair.Value);
                 _equalityOperatorBuilder.AppendLine("=");
             }
 
