@@ -15,9 +15,9 @@ namespace GigaCreation.Tools.Csv2Collections
         public bool HasHeader { get; }
 
         /// <summary>
-        /// The separator if multiple columns are specified.
+        /// The separator for value if multiple columns are specified.
         /// </summary>
-        public string Separator { get; }
+        public string ValueSeparator { get; }
 
         /// <summary>
         /// The indexes of the columns to extract as a value.
@@ -25,20 +25,34 @@ namespace GigaCreation.Tools.Csv2Collections
         public int[] ValueColumnIndexes { get; }
 
         /// <summary>
+        /// The separator for key if multiple columns are specified.
+        /// </summary>
+        public string KeySeparator { get; private set; }
+
+        /// <summary>
         /// The indexes of the columns to extract as a key.
         /// </summary>
         public int[] KeyColumnIndexes { get; private set; }
 
-        public CsvExtractRequest(string csv, bool hasHeader = false, string separator = null, params int[] valueIndexes)
+        public CsvExtractRequest(
+            string csv, bool hasHeader = false, string valueSeparator = null, params int[] valueIndexes
+        )
         {
             Csv = csv;
             HasHeader = hasHeader;
-            Separator = separator;
+            ValueSeparator = valueSeparator;
             ValueColumnIndexes = valueIndexes;
         }
 
         public void SetKeyColumnIndexes(params int[] indexes)
         {
+            KeySeparator = null;
+            KeyColumnIndexes = indexes;
+        }
+
+        public void SetKeyColumnIndexes(string keySeparator, params int[] indexes)
+        {
+            KeySeparator = keySeparator;
             KeyColumnIndexes = indexes;
         }
 

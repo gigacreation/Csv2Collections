@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace GigaCreation.Tools.Csv2Collections
@@ -25,7 +26,10 @@ namespace GigaCreation.Tools.Csv2Collections
 
             Extract(request.Csv, request.HasHeader, request.GetMaxTargetColumnIndex(), splitLine =>
             {
-                result.Add(string.Join(request.Separator, request.ValueColumnIndexes.Select(idx => splitLine[idx])));
+                result.Add(string.Join(
+                    request.ValueSeparator,
+                    request.ValueColumnIndexes.Select(index => splitLine[index])
+                ));
             });
 
             return result;
@@ -49,17 +53,21 @@ namespace GigaCreation.Tools.Csv2Collections
             Extract(request.Csv, request.HasHeader, request.GetMaxTargetColumnIndex(), splitLine =>
             {
                 result.Add(
-                    string.Join(request.Separator, request.KeyColumnIndexes.Select(idx => splitLine[idx])),
-                    string.Join(request.Separator, request.ValueColumnIndexes.Select(idx => splitLine[idx]))
+                    string.Join(request.KeySeparator, request.KeyColumnIndexes.Select(index => splitLine[index])),
+                    string.Join(request.ValueSeparator, request.ValueColumnIndexes.Select(index => splitLine[index]))
                 );
             });
 
             return result;
         }
 
-        private static void Extract(string csvText, bool hasHeader, int maxTargetColumnIndex, Action<string[]> action)
+        private static void Extract(
+            string csvText, bool hasHeader, int maxTargetColumnIndex, Action<IList<string>> join
+        )
         {
             var reader = new StringReader(csvText);
+            var columns = new List<string>();
+            var builder = new StringBuilder();
 
             if (hasHeader)
             {
@@ -76,14 +84,47 @@ namespace GigaCreation.Tools.Csv2Collections
                     continue;
                 }
 
-                string[] splitLine = line.Split(',');
+                columns.Clear();
+                builder.Clear();
+                var isInLiteral = false;
 
-                if (maxTargetColumnIndex >= splitLine.Length)
+                for (var i = 0; i < line.Length; i++)
                 {
-                    continue;
+                    if ((line[i] == ',') && !isInLiteral)
+                    {
+                        columns.Add(builder.ToString());
+                        builder.Clear();
+
+                        continue;
+                    }
+
+                    if (line[i] == '\"')
+                    {
+                        if ((i < line.Length - 1) && (line[i + 1] == '\"'))
+                        {
+                            builder.Append('\"');
+                            i++;
+                        }
+                        else
+                        {
+                            isInLiteral = !isInLiteral;
+                        }
+
+                        continue;
+                    }
+
+                    builder.Append(line[i]);
                 }
 
-                action(splitLine);
+                columns.Add(builder.ToString());
+
+                if (maxTargetColumnIndex >= columns.Count)
+                {
+                    Debug.LogError("The index of the column to be extracted is out of range.");
+                    return;
+                }
+
+                join(columns);
             }
         }
     }
