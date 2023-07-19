@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace GigaCreation.Tools.Csv2Collections
 {
     public class CsvExtractRequest
@@ -25,6 +23,11 @@ namespace GigaCreation.Tools.Csv2Collections
         public int[] ValueColumnIndexes { get; }
 
         /// <summary>
+        /// The headers of the columns to extract as a value.
+        /// </summary>
+        public string[] ValueColumnHeaders { get; }
+
+        /// <summary>
         /// The separator for key if multiple columns are specified.
         /// </summary>
         public string KeySeparator { get; private set; }
@@ -34,34 +37,47 @@ namespace GigaCreation.Tools.Csv2Collections
         /// </summary>
         public int[] KeyColumnIndexes { get; private set; }
 
+        /// <summary>
+        /// The headers of the columns to extract as a key.
+        /// </summary>
+        public string[] KeyColumnHeaders { get; private set; }
+
         public CsvExtractRequest(
-            string csv, bool hasHeader = false, string valueSeparator = null, params int[] valueIndexes
+            string csv, bool hasHeader = false, string valueSeparator = null, params int[] valueColumnIndexes
         )
         {
             Csv = csv;
             HasHeader = hasHeader;
             ValueSeparator = valueSeparator;
-            ValueColumnIndexes = valueIndexes;
+            ValueColumnIndexes = valueColumnIndexes;
         }
 
-        public void SetKeyColumnIndexes(params int[] indexes)
+        public CsvExtractRequest(string csv, params string[] valueColumnHeaders)
         {
-            KeySeparator = null;
+            Csv = csv;
+            HasHeader = true;
+            ValueSeparator = null;
+            ValueColumnHeaders = valueColumnHeaders;
+        }
+
+        public CsvExtractRequest(string csv, string valueSeparator, params string[] valueColumnHeaders)
+        {
+            Csv = csv;
+            HasHeader = true;
+            ValueSeparator = valueSeparator;
+            ValueColumnHeaders = valueColumnHeaders;
+        }
+
+        public void SetKeyColumnIndexes(string separator = null, params int[] indexes)
+        {
+            KeySeparator = separator;
             KeyColumnIndexes = indexes;
         }
 
-        public void SetKeyColumnIndexes(string keySeparator, params int[] indexes)
+        public void SetKeyColumnHeaders(string separator = null, params string[] headers)
         {
-            KeySeparator = keySeparator;
-            KeyColumnIndexes = indexes;
-        }
-
-        public int GetMaxTargetColumnIndex()
-        {
-            return Mathf.Max(
-                KeyColumnIndexes == null ? 0 : Mathf.Max(KeyColumnIndexes),
-                ValueColumnIndexes == null ? 0 : Mathf.Max(ValueColumnIndexes)
-            );
+            KeySeparator = separator;
+            KeyColumnHeaders = headers;
         }
     }
 }

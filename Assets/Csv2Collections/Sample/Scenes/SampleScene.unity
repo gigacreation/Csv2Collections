@@ -1015,12 +1015,18 @@ MonoBehaviour:
   _keysLabel: {fileID: 164794440}
   _valuesLabel: {fileID: 696933797}
   _equalityOperatorLabel: {fileID: 39913350}
-  _testTarget: 2
   _csvPath: Sample
   _hasHeader: 1
-  _separator: ' / '
+  _extractByHeader: 0
+  _testTarget: 1
+  _keySeparator: 
+  _valueSeparator: ': '
   _keyColumnIndexes: 01000000
-  _valueColumnIndexes: 0000000002000000
+  _valueColumnIndexes: 0000000003000000
+  _keyColumnHeaders:
+  - name
+  _valueColumnHeaders:
+  - release_date
 --- !u!4 &1641244826
 Transform:
   m_ObjectHideFlags: 0

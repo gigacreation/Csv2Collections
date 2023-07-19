@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,23 +13,32 @@ namespace GigaCreation.Tools.Csv2Collections
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated list.</returns>
-        public static List<string> ExtractIntoList(CsvExtractRequest request)
+        public static IList<string> ExtractIntoList(CsvExtractRequest request)
         {
-            if (!(request.ValueColumnIndexes?.Length > 0))
-            {
-                Debug.LogError("The index of the column to be extracted is not specified.");
-                return null;
-            }
+            var reader = new StringReader(request.Csv);
+            string headerLine = request.HasHeader ? reader.ReadLine() : null;
 
-            var result = new List<string>();
+            IList<int> valueIndexes
+                = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
 
-            Extract(request.Csv, request.HasHeader, request.GetMaxTargetColumnIndex(), splitLine =>
+            IList<string> result = new List<string>();
+
+            while (reader.Peek() > -1)
             {
+                string line = reader.ReadLine();
+
+                if (line == null)
+                {
+                    continue;
+                }
+
+                IList<string> splitLine = SplitLine(line);
+
                 result.Add(string.Join(
                     request.ValueSeparator,
-                    request.ValueColumnIndexes.Select(index => splitLine[index])
+                    valueIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
                 ));
-            });
+            }
 
             return result;
         }
@@ -40,92 +48,213 @@ namespace GigaCreation.Tools.Csv2Collections
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated dictionary.</returns>
-        public static Dictionary<string, string> ExtractIntoDictionary(CsvExtractRequest request)
+        public static IDictionary<string, string> ExtractIntoDictionary(CsvExtractRequest request)
         {
-            if (!(request.KeyColumnIndexes?.Length > 0) || !(request.ValueColumnIndexes?.Length > 0))
-            {
-                Debug.LogError("The index of the column to be extracted is not specified.");
-                return null;
-            }
+            var reader = new StringReader(request.Csv);
+            string headerLine = request.HasHeader ? reader.ReadLine() : null;
 
-            var result = new Dictionary<string, string>();
+            IList<int> keyIndexes
+                = DetermineTargetIndexes(request.KeyColumnIndexes, request.KeyColumnHeaders, headerLine);
 
-            Extract(request.Csv, request.HasHeader, request.GetMaxTargetColumnIndex(), splitLine =>
-            {
-                result.Add(
-                    string.Join(request.KeySeparator, request.KeyColumnIndexes.Select(index => splitLine[index])),
-                    string.Join(request.ValueSeparator, request.ValueColumnIndexes.Select(index => splitLine[index]))
-                );
-            });
+            IList<int> valueIndexes
+                = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
 
-            return result;
-        }
-
-        private static void Extract(
-            string csvText, bool hasHeader, int maxTargetColumnIndex, Action<IList<string>> join
-        )
-        {
-            var reader = new StringReader(csvText);
-            var columns = new List<string>();
-            var builder = new StringBuilder();
-
-            if (hasHeader)
-            {
-                // Skip the header.
-                reader.ReadLine();
-            }
+            IDictionary<string, string> result = new Dictionary<string, string>();
 
             while (reader.Peek() > -1)
             {
                 string line = reader.ReadLine();
 
-                if (string.IsNullOrEmpty(line))
+                if (line == null)
                 {
                     continue;
                 }
 
-                columns.Clear();
-                builder.Clear();
-                var isInLiteral = false;
+                IList<string> splitLine = SplitLine(line);
 
-                for (var i = 0; i < line.Length; i++)
+                string key = string.Join(
+                    request.KeySeparator,
+                    keyIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
+                );
+
+                string value = string.Join(
+                    request.ValueSeparator,
+                    valueIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
+                );
+
+                if (!result.TryAdd(key, value))
                 {
-                    if ((line[i] == ',') && !isInLiteral)
-                    {
-                        columns.Add(builder.ToString());
-                        builder.Clear();
-
-                        continue;
-                    }
-
-                    if (line[i] == '\"')
-                    {
-                        if ((i < line.Length - 1) && (line[i + 1] == '\"'))
-                        {
-                            builder.Append('\"');
-                            i++;
-                        }
-                        else
-                        {
-                            isInLiteral = !isInLiteral;
-                        }
-
-                        continue;
-                    }
-
-                    builder.Append(line[i]);
+                    Debug.LogWarning($"Duplicate key found: {key}");
                 }
-
-                columns.Add(builder.ToString());
-
-                if (maxTargetColumnIndex >= columns.Count)
-                {
-                    Debug.LogError("The index of the column to be extracted is out of range.");
-                    return;
-                }
-
-                join(columns);
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a multi-list with elements extracted from a CSV text.
+        /// </summary>
+        /// <param name="request">The request data.</param>
+        /// <returns>The generated list.</returns>
+        public static IList<IList<string>> ExtractIntoMultiList(CsvExtractRequest request)
+        {
+            var reader = new StringReader(request.Csv);
+            string headerLine = request.HasHeader ? reader.ReadLine() : null;
+
+            IList<int> valueIndexes
+                = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
+
+            IList<IList<string>> result = new List<IList<string>>();
+
+            while (reader.Peek() > -1)
+            {
+                string line = reader.ReadLine();
+
+                if (line == null)
+                {
+                    continue;
+                }
+
+                IList<string> splitLine = SplitLine(line);
+
+                result.Add(valueIndexes.Count > 0
+                    ? valueIndexes
+                        .Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
+                        .ToList()
+                    : splitLine);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a multi-dictionary with keys and values extracted from a CSV text.
+        /// </summary>
+        /// <param name="request">The request data.</param>
+        /// <returns>The generated dictionary.</returns>
+        public static IDictionary<string, IList<string>> ExtractIntoMultiDictionary(CsvExtractRequest request)
+        {
+            var reader = new StringReader(request.Csv);
+            string headerLine = request.HasHeader ? reader.ReadLine() : null;
+
+            IList<int> keyIndexes
+                = DetermineTargetIndexes(request.KeyColumnIndexes, request.KeyColumnHeaders, headerLine);
+
+            IList<int> valueIndexes
+                = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
+
+            int keyMaxIndex = keyIndexes.Max();
+
+            IDictionary<string, IList<string>> result = new Dictionary<string, IList<string>>();
+
+            while (reader.Peek() > -1)
+            {
+                string line = reader.ReadLine();
+
+                if (line == null)
+                {
+                    continue;
+                }
+
+                IList<string> splitLine = SplitLine(line);
+
+                string key = string.Join(
+                    request.KeySeparator,
+                    splitLine.Count > keyMaxIndex ? keyIndexes.Select(index => splitLine[index]) : ""
+                );
+
+                IList<string> value = valueIndexes.Count > 0
+                    ? valueIndexes
+                        .Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
+                        .ToList()
+                    : splitLine;
+
+                if (!result.TryAdd(key, value))
+                {
+                    Debug.LogWarning($"Duplicate key found: {key}");
+                }
+            }
+
+            return result;
+        }
+
+        private static IList<int> DetermineTargetIndexes(
+            IReadOnlyCollection<int> targetIndexes, IReadOnlyCollection<string> targetHeaders, string headerLine
+        )
+        {
+            if (targetIndexes?.Count > 0)
+            {
+                return targetIndexes.ToList();
+            }
+
+            if (targetHeaders?.Count > 0)
+            {
+                IList<int> result = new List<int>();
+
+                if (string.IsNullOrEmpty(headerLine))
+                {
+                    Debug.LogWarning("The header line doesn't exist in the csv.");
+                    return result;
+                }
+
+                IList<string> headersInCsv = SplitLine(headerLine);
+
+                foreach (string targetHeader in targetHeaders)
+                {
+                    int headerIndex = headersInCsv.IndexOf(targetHeader);
+
+                    if (headerIndex == -1)
+                    {
+                        Debug.LogWarning($"The target header doesn't exist in the csv: {targetHeader}");
+                        continue;
+                    }
+
+                    result.Add(headerIndex);
+                }
+
+                return result;
+            }
+
+            return new List<int>();
+        }
+
+        private static IList<string> SplitLine(string line)
+        {
+            IList<string> columns = new List<string>();
+            var builder = new StringBuilder(line.Length);
+            var isInLiteral = false;
+
+            for (var i = 0; i < line.Length; i++)
+            {
+                if ((line[i] == ',') && !isInLiteral)
+                {
+                    columns.Add(builder.ToString());
+                    builder.Clear();
+
+                    continue;
+                }
+
+                if (line[i] == '\"')
+                {
+                    if ((i < line.Length - 1) && (line[i + 1] == '\"'))
+                    {
+                        builder.Append('\"');
+                        i++;
+                    }
+                    else
+                    {
+                        isInLiteral = !isInLiteral;
+                    }
+
+                    continue;
+                }
+
+                builder.Append(line[i]);
+            }
+
+            columns.Add(builder.ToString());
+
+            return columns;
         }
     }
 }
