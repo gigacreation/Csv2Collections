@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -137,10 +136,10 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
 
             ClearStringBuilders();
 
-            foreach (IList<string> column in response)
+            for (var i = 0; i < response.Count; i++)
             {
-                _keysBuilder.AppendLine($"[\"{column[_keyColumnIndexes.First()]}\"]");
-                _valuesBuilder.AppendLine(column[_valueColumnIndexes.First()]);
+                _keysBuilder.AppendLine($"[\"{i}\"]");
+                _valuesBuilder.AppendLine(response[i][0]);
                 _equalityOperatorBuilder.AppendLine("=");
             }
 
@@ -176,7 +175,7 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
             foreach (KeyValuePair<string, IList<string>> pair in response)
             {
                 _keysBuilder.AppendLine($"[\"{pair.Key}\"]");
-                _valuesBuilder.AppendLine(pair.Value[_valueColumnIndexes.First()]);
+                _valuesBuilder.AppendLine(pair.Value[0]);
                 _equalityOperatorBuilder.AppendLine("=");
             }
 
