@@ -61,6 +61,12 @@ namespace GigaCreation.Tools.Csv2Collections
 
             IDictionary<string, string> result = new Dictionary<string, string>();
 
+            if (keyIndexes.Count == 0)
+            {
+                Debug.LogWarning("No key column specified.");
+                return result;
+            }
+
             while (reader.Peek() > -1)
             {
                 string line = reader.ReadLine();
@@ -143,9 +149,13 @@ namespace GigaCreation.Tools.Csv2Collections
             IList<int> valueIndexes
                 = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
 
-            int keyMaxIndex = keyIndexes.Max();
-
             IDictionary<string, IList<string>> result = new Dictionary<string, IList<string>>();
+
+            if (keyIndexes.Count == 0)
+            {
+                Debug.LogWarning("No key column specified.");
+                return result;
+            }
 
             while (reader.Peek() > -1)
             {
@@ -160,7 +170,7 @@ namespace GigaCreation.Tools.Csv2Collections
 
                 string key = string.Join(
                     request.KeySeparator,
-                    splitLine.Count > keyMaxIndex ? keyIndexes.Select(index => splitLine[index]) : ""
+                    keyIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
                 );
 
                 IList<string> value = valueIndexes.Count > 0

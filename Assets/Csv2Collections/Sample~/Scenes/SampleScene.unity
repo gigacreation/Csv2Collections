@@ -1028,13 +1028,17 @@ MonoBehaviour:
   _csvPath: Sample
   _hasHeader: 1
   _extractByHeader: 0
-  _testTarget: 2
-  _keySeparator: ' / '
-  _valueSeparator: ': '
-  _keyColumnIndexes: 
-  _valueColumnIndexes: 
-  _keyColumnHeaders: []
-  _valueColumnHeaders: []
+  _testTarget: 0
+  _keySeparator: '; '
+  _valueSeparator: ' / '
+  _keyColumnIndexes: 0000000001000000
+  _valueColumnIndexes: 0200000003000000
+  _keyColumnHeaders:
+  - name
+  - model_number
+  _valueColumnHeaders:
+  - release_date
+  - slogan
 --- !u!4 &1641244826
 Transform:
   m_ObjectHideFlags: 0
