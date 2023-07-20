@@ -21,6 +21,12 @@ namespace GigaCreation.Tools.Csv2Collections
             IList<int> valueIndexes
                 = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
 
+            if (valueIndexes == null)
+            {
+                Debug.LogError("The value column indexes or headers are not specified.");
+                return null;
+            }
+
             IList<string> result = new List<string>();
 
             while (reader.Peek() > -1)
@@ -58,6 +64,18 @@ namespace GigaCreation.Tools.Csv2Collections
 
             IList<int> valueIndexes
                 = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
+
+            if (keyIndexes == null)
+            {
+                Debug.LogError("The key column indexes or headers are not specified.");
+                return null;
+            }
+
+            if (valueIndexes == null)
+            {
+                Debug.LogError("The value column indexes or headers are not specified.");
+                return null;
+            }
 
             IDictionary<string, string> result = new Dictionary<string, string>();
 
@@ -98,11 +116,11 @@ namespace GigaCreation.Tools.Csv2Collections
         }
 
         /// <summary>
-        /// Returns a multi-list with elements extracted from a CSV text.
+        /// Returns a nested list with elements extracted from a CSV text.
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated list.</returns>
-        public static IList<IList<string>> ExtractIntoMultiList(CsvExtractRequest request)
+        public static IList<IList<string>> ExtractIntoNestedList(CsvExtractRequest request)
         {
             var reader = new StringReader(request.Csv);
             string headerLine = request.HasHeader ? reader.ReadLine() : null;
@@ -123,22 +141,20 @@ namespace GigaCreation.Tools.Csv2Collections
 
                 IList<string> splitLine = SplitLine(line);
 
-                result.Add(valueIndexes.Count > 0
-                    ? valueIndexes
-                        .Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
-                        .ToList()
-                    : splitLine);
+                result.Add(valueIndexes
+                    ?.Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
+                    .ToList() ?? splitLine);
             }
 
             return result;
         }
 
         /// <summary>
-        /// Returns a multi-dictionary with keys and values extracted from a CSV text.
+        /// Returns a dictionary with keys and values including lists extracted from a CSV text.
         /// </summary>
         /// <param name="request">The request data.</param>
         /// <returns>The generated dictionary.</returns>
-        public static IDictionary<string, IList<string>> ExtractIntoMultiDictionary(CsvExtractRequest request)
+        public static IDictionary<string, IList<string>> ExtractIntoDictionaryIncludingLists(CsvExtractRequest request)
         {
             var reader = new StringReader(request.Csv);
             string headerLine = request.HasHeader ? reader.ReadLine() : null;
@@ -173,11 +189,82 @@ namespace GigaCreation.Tools.Csv2Collections
                     keyIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
                 );
 
-                IList<string> value = valueIndexes.Count > 0
+                IList<string> value = valueIndexes
+                    ?.Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
+                    .ToList() ?? splitLine;
+
+                if (!result.TryAdd(key, value))
+                {
+                    Debug.LogWarning($"Duplicate key found: {key}");
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a nested dictionary with keys and values extracted from a CSV text.
+        /// </summary>
+        /// <param name="request">The request data.</param>
+        /// <returns>The generated dictionary.</returns>
+        public static IDictionary<string, IDictionary<string, string>> ExtractIntoNestedDictionary(
+            CsvExtractRequest request
+        )
+        {
+            var reader = new StringReader(request.Csv);
+
+            if (!request.HasHeader)
+            {
+                Debug.LogError("Nested dictionaries cannot be extracted from CSV with headers.");
+                return null;
+            }
+
+            string headerLine = reader.ReadLine();
+            IList<string> headersInCsv = SplitLine(headerLine);
+
+            IList<int> keyIndexes
+                = DetermineTargetIndexes(request.KeyColumnIndexes, request.KeyColumnHeaders, headerLine);
+
+            IList<int> valueIndexes
+                = DetermineTargetIndexes(request.ValueColumnIndexes, request.ValueColumnHeaders, headerLine);
+
+            IDictionary<string, IDictionary<string, string>> result
+                = new Dictionary<string, IDictionary<string, string>>();
+
+            if (keyIndexes.Count == 0)
+            {
+                Debug.LogWarning("No key column specified.");
+                return result;
+            }
+
+            while (reader.Peek() > -1)
+            {
+                string line = reader.ReadLine();
+
+                if (line == null)
+                {
+                    continue;
+                }
+
+                IList<string> splitLine = SplitLine(line);
+
+                string key = string.Join(
+                    request.KeySeparator,
+                    keyIndexes.Select(index => splitLine.Count > index ? splitLine[index] : "")
+                );
+
+                IDictionary<string, string> value = valueIndexes != null
                     ? valueIndexes
-                        .Select(targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : "")
-                        .ToList()
-                    : splitLine;
+                        .ToDictionary(
+                            targetIndex => headersInCsv[targetIndex],
+                            targetIndex => splitLine.Count > targetIndex ? splitLine[targetIndex] : ""
+                        )
+                    : splitLine
+                        .Select((value, index) => new { value, index })
+                        .ToDictionary(
+                            pair => headersInCsv.Count > pair.index ? headersInCsv[pair.index] : "",
+                            pair => pair.value
+                        );
 
                 if (!result.TryAdd(key, value))
                 {
@@ -199,15 +286,14 @@ namespace GigaCreation.Tools.Csv2Collections
 
             if (targetHeaders?.Count > 0)
             {
-                IList<int> result = new List<int>();
-
                 if (string.IsNullOrEmpty(headerLine))
                 {
                     Debug.LogWarning("The header line doesn't exist in the csv.");
-                    return result;
+                    return new List<int>();
                 }
 
                 IList<string> headersInCsv = SplitLine(headerLine);
+                IList<int> result = new List<int>();
 
                 foreach (string targetHeader in targetHeaders)
                 {
@@ -225,7 +311,7 @@ namespace GigaCreation.Tools.Csv2Collections
                 return result;
             }
 
-            return new List<int>();
+            return null;
         }
 
         private static IList<string> SplitLine(string line)

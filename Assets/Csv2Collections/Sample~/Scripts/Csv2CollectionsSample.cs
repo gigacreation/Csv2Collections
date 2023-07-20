@@ -45,12 +45,16 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
                     TestDictionaryExtracting(csv);
                     break;
 
-                case TestTarget.MultiList:
-                    TestMultiListExtracting(csv);
+                case TestTarget.NestedList:
+                    TestNestedListExtracting(csv);
                     break;
 
-                case TestTarget.MultiDictionary:
-                    TestMultiDictionaryExtracting(csv);
+                case TestTarget.DictionaryIncludingLists:
+                    TestDictionaryIncludingListsExtracting(csv);
+                    break;
+
+                case TestTarget.NestedDictionary:
+                    TestNestedDictionaryExtracting(csv);
                     break;
 
                 default:
@@ -121,13 +125,13 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
             _equalityOperatorLabel.SetText(_equalityOperatorBuilder);
         }
 
-        private void TestMultiListExtracting(string csv)
+        private void TestNestedListExtracting(string csv)
         {
             CsvExtractRequest request = _extractByHeader
                 ? new CsvExtractRequest(csv, _valueColumnHeaders)
                 : new CsvExtractRequest(csv, _hasHeader);
 
-            IList<IList<string>> response = CsvUtility.ExtractIntoMultiList(request);
+            IList<IList<string>> response = CsvUtility.ExtractIntoNestedList(request);
 
             if (response == null)
             {
@@ -148,7 +152,7 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
             _equalityOperatorLabel.SetText(_equalityOperatorBuilder);
         }
 
-        private void TestMultiDictionaryExtracting(string csv)
+        private void TestDictionaryIncludingListsExtracting(string csv)
         {
             CsvExtractRequest request;
 
@@ -163,7 +167,7 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
                 request.SetKeyColumnIndexes(_keySeparator, _keyColumnIndexes);
             }
 
-            IDictionary<string, IList<string>> response = CsvUtility.ExtractIntoMultiDictionary(request);
+            IDictionary<string, IList<string>> response = CsvUtility.ExtractIntoDictionaryIncludingLists(request);
 
             if (response == null)
             {
@@ -184,6 +188,42 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
             _equalityOperatorLabel.SetText(_equalityOperatorBuilder);
         }
 
+        private void TestNestedDictionaryExtracting(string csv)
+        {
+            CsvExtractRequest request;
+
+            if (_extractByHeader)
+            {
+                request = new CsvExtractRequest(csv, _valueColumnHeaders);
+                request.SetKeyColumnHeaders(_keySeparator, _keyColumnHeaders);
+            }
+            else
+            {
+                request = new CsvExtractRequest(csv, _hasHeader);
+                request.SetKeyColumnIndexes(_keySeparator, _keyColumnIndexes);
+            }
+
+            IDictionary<string, IDictionary<string, string>> response = CsvUtility.ExtractIntoNestedDictionary(request);
+
+            if (response == null)
+            {
+                return;
+            }
+
+            ClearStringBuilders();
+
+            foreach (KeyValuePair<string, IDictionary<string, string>> pair in response)
+            {
+                _keysBuilder.AppendLine($"[\"{pair.Key}\"]");
+                _valuesBuilder.AppendLine(pair.Value["release_date"]);
+                _equalityOperatorBuilder.AppendLine("=");
+            }
+
+            _keysLabel.SetText(_keysBuilder);
+            _valuesLabel.SetText(_valuesBuilder);
+            _equalityOperatorLabel.SetText(_equalityOperatorBuilder);
+        }
+
         private void ClearStringBuilders()
         {
             _keysBuilder.Clear();
@@ -195,8 +235,9 @@ namespace GigaCreation.Tools.Csv2Collections.Sample
         {
             List,
             Dictionary,
-            MultiList,
-            MultiDictionary
+            NestedList,
+            DictionaryIncludingLists,
+            NestedDictionary
         }
     }
 }
