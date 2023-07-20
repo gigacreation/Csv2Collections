@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -8,11 +7,10 @@ namespace GigaCreation.Tools.Csv2Collections
 {
     public static class CsvParser
     {
-        public static string[,] Parse(string csv)
+        public static List<List<string>> Parse(string csv)
         {
             var reader = new StringReader(csv);
-
-            IList<IList<string>> nestedList = new List<IList<string>>();
+            var result = new List<List<string>>();
 
             while (reader.Peek() > -1)
             {
@@ -21,48 +19,39 @@ namespace GigaCreation.Tools.Csv2Collections
                 // `line` is null if the end of the string is reached.
                 if (line == null)
                 {
-                    // TODO: 空行の時に break されないかどうかチェックする
                     break;
                 }
 
-                nestedList.Add(SplitLine(line));
-            }
-
-            int numOfRows = nestedList.Count;
-            int numOfColumns = nestedList.Max(row => row.Count);
-
-            var result = new string[numOfRows, numOfColumns];
-
-            for (var i = 0; i < numOfRows; i++)
-            {
-                for (var j = 0; j < numOfColumns; j++)
-                {
-                    result[i, j] = nestedList[i].Count > j ? nestedList[i][j] : "";
-                }
+                result.Add(SplitLine(line));
             }
 
             return result;
         }
 
-        public static Dictionary<string, string>[] ParseIntoDictionaries(string csv)
+        public static List<Dictionary<string, string>> ParseIntoDictionaries(string csv)
         {
-            string[,] table = Parse(csv);
+            List<List<string>> table = Parse(csv);
 
-            int numOfRows = table.GetLength(0);
-            int numOfColumns = table.GetLength(1);
+            int numOfRows = table.Count;
 
             if (numOfRows == 0)
             {
-                Debug.LogError("The csv is empty.");
+                Debug.LogWarning("The csv is empty.");
+                return null;
+            }
+
+            if (numOfRows == 1)
+            {
+                Debug.LogWarning("The csv has header only.");
                 return null;
             }
 
             return null;
         }
 
-        private static IList<string> SplitLine(string line)
+        private static List<string> SplitLine(string line)
         {
-            IList<string> columns = new List<string>();
+            var columns = new List<string>();
             var builder = new StringBuilder(line.Length);
             var isInLiteral = false;
 

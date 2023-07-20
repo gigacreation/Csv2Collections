@@ -1,5 +1,5 @@
 {
-    "name": "GigaCreation.Tools.Csv2Collections",
+    "name": "GigaCreation.Tools.CsvParser",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
