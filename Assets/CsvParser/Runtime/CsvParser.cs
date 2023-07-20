@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -32,21 +33,33 @@ namespace GigaCreation.Tools.Csv2Collections
         {
             List<List<string>> table = Parse(csv);
 
-            int numOfRows = table.Count;
-
-            if (numOfRows == 0)
+            if ((table.Count == 0) || table[0].Any(string.IsNullOrEmpty))
             {
-                Debug.LogWarning("The csv is empty.");
+                Debug.LogWarning("Some or all of the headers are empty.");
                 return null;
             }
 
-            if (numOfRows == 1)
+            if (table[0].GroupBy(header => header).Any(grouping => grouping.Count() > 1))
             {
-                Debug.LogWarning("The csv has header only.");
+                Debug.LogWarning("Duplicate header found.");
                 return null;
             }
 
-            return null;
+            var result = new List<Dictionary<string, string>>(table.Count - 1);
+
+            for (var rowIndex = 1; rowIndex < table.Count; rowIndex++)
+            {
+                var dict = new Dictionary<string, string>(table[0].Count);
+
+                for (var columnIndex = 0; columnIndex < table[0].Count; columnIndex++)
+                {
+                    dict.Add(table[0][columnIndex], table[rowIndex][columnIndex]);
+                }
+
+                result.Add(dict);
+            }
+
+            return result;
         }
 
         private static List<string> SplitLine(string line)
